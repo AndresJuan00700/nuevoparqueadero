@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking - CECAR</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2ecc71;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header img {
+      height: 50px;
+      margin-right: 10px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #27ae60;
+      padding: 10px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      font-weight: bold;
+      border-radius: 5px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+    nav a:hover {
+      background-color: #2ecc71;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .hero {
+      background-image: url('https://example.com/parking-banner.jpg');
+      background-size: cover;
+      background-position: center;
+      padding: 80px 20px;
+      text-align: center;
+      color: #fff;
+      border-radius: 8px;
+    }
+    .hero h2 {
+      font-size: 2.5rem;
+      margin: 0;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    h2 {
+      color: #2ecc71;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .parking-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .parking-status-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      width: 150px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .parking-status-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    .card-header {
+      font-weight: bold;
+      color: #2ecc71;
+    }
+    .card-value {
+      font-size: 1.5rem;
+      color: #27ae60;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .low-availability {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .status-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .available-icon {
+      color: #2ecc71;
+    }
+    .limited-icon {
+      color: #e67e22;
+    }
+    .full-icon {
+      color: #e74c3c;
+    }
+    .entry-table, .reservation-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .entry-table th, .entry-table td, .reservation-table th, .reservation-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    .entry-table th, .reservation-table th {
+      background-color: #2ecc71;
+      color: white;
+    }
+    .message, .error-message {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .message {
+      color: #2ecc71;
+    }
+    .error-message {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSDWuHsBUTzQHkKYSnU2UyfzOodNDarxmn7g&s" alt="Logo de CECAR">
+    <h1>Smart Parking - CECAR</h1>
+  </header>
+
+  <nav>
+    <a onclick="navigateTo('home')">Inicio</a>
+    <a onclick="navigateTo('availability')">Disponibilidad</a>
+    <a onclick="navigateTo('register')">Registro de Entrada</a>
+    <a onclick="navigateTo('reservation')">Reservas</a>
+  </nav>
+
+  <div class="container">
+    <section id="home" class="section active">
+      <div class="hero">
+        <h2>Bienvenido a Smart Parking</h2>
+        <p>Gestiona y reserva tu espacio en el estacionamiento de CECAR de manera rápida y segura.</p>
+      </div>
+      <p style="text-align: center; font-size: 1.1rem; color: #555;">Seleccione una opción en el menú de navegación para comenzar.</p>
+    </section>
+
+    <section id="availability" class="section">
+      <h2>Disponibilidad de Espacios por Bloque</h2>
+      <div class="parking-status" id="parking-status"></div>
+    </section>
+
+    <section id="register" class="section">
+      <h2>Registro de Entrada al Parqueadero</h2>
+      <label for="block-select">Selecciona Bloque:</label>
+      <select id="block-select">
+        <option value="">Seleccionar Bloque</option>
+        <option value="A">Bloque A</option>
+        <option value="B">Bloque B</option>
+        <option value="C">Bloque C</option>
+        <option value="D">Bloque D</option>
+        <option value="E">Bloque E</option>
+        <option value="F">Bloque F</option>
+        <option value="G">Bloque G</option>
+      </select>
+      <input type="text" id="license-plate" placeholder="Número de placa (e.g., ABC123)">
+      <input type="text" id="vehicle-type" placeholder="Tipo de vehículo (e.g., Automóvil)">
+      <button class="btn" onclick="registerEntry()">Registrar</button>
+      <div id="register-message" class="message"></div>
+      <div id="register-error-message" class="error-message"></div>
+      <table class="entry-table" id="entry-table">
+        <thead>
+          <tr>
+            <th>Placa</th>
+            <th>Tipo de Vehículo</th>
+            <th>Bloque</th>
+            <th>Hora de Entrada</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="reservation" class="section">
+      <h2>Reservar Espacio</h2>
+      <label for="reservation-block">Selecciona Bloque:</label>
+      <select id="reservation-block">
+        <option value="">Seleccionar Bloque</option>
+        <option value="A">Bloque A</option>
+        <option value="B">Bloque B</option>
+        <option value="C">Bloque C</option>
+        <option value="D">Bloque D</option>
+        <option value="E">Bloque E</option>
+        <option value="F">Bloque F</option>
+        <option value="G">Bloque G</option>
+      </select>
+      <input type="text" id="reservation-license-plate" placeholder="Número de placa (e.g., ABC123)">
+      <button class="btn" onclick="reserveSpace()">Reservar</button>
+      <div id="reservation-message" class="message"></div>
+      <div id="reservation-error-message" class="error-message"></div>
+      <table class="reservation-table" id="reservation-table">
+        <thead>
+          <tr>
+            <th>Placa</th>
+            <th>Bloque</th>
+            <th>Hora de Reserva</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const blocks = {
+      A: { total: 100, available: 60 },
+      B: { total: 50, available: 30 },
+      C: { total: 70, available: 50 },
+      D: { total: 80, available: 60 },
+      E: { total: 50, available: 30 },
+      F: { total: 70, available: 40 },
+      G: { total: 80, available: 70 },
+    };
+
+    function navigateTo(sectionId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+    }
+
+    function updateParkingStatus() {
+      const parkingStatusDiv = document.getElementById('parking-status');
+      parkingStatusDiv.innerHTML = '';
+
+      Object.entries(blocks).forEach(([block, data]) => {
+        const card = document.createElement('div');
+        card.classList.add('parking-status-card');
+
+        let iconClass = 'available-icon';
+        let iconText = '✔️';
+        let cardValueClass = '';
+        if (data.available === 0) {
+          iconClass = 'full-icon';
+          iconText = '❌';
+          cardValueClass = 'low-availability';
+        } else if (data.available / data.total < 0.2) {
+          iconClass = 'limited-icon';
+          iconText = '⚠️';
+          cardValueClass = 'low-availability';
+        }
+
+        card.innerHTML = `
+          <div class="status-icon ${iconClass}">${iconText}</div>
+          <div class="card-header">Bloque ${block}</div>
+          <p class="card-value ${cardValueClass}">${data.available} / ${data.total}</p>
+          <p>Available Spaces</p>
+        `;
+        parkingStatusDiv.appendChild(card);
+      });
+    }
+
+    function registerEntry() {
+      const licensePlate = document.getElementById('license-plate').value.trim().toUpperCase();
+      const vehicleType = document.getElementById('vehicle-type').value.trim();
+      const selectedBlock = document.getElementById('block-select').value;
+      const entryTime = new Date().toLocaleTimeString();
+
+      const registerMessage = document.getElementById('register-message');
+      const registerErrorMessage = document.getElementById('register-error-message');
+      registerMessage.textContent = '';
+      registerErrorMessage.textContent = '';
+
+      if (!licensePlate || !vehicleType || !selectedBlock) {
+        registerErrorMessage.textContent = 'Todos los campos son obligatorios.';
+        return;
+      }
+
+      if (!/^[A-Z0-9]{6}$/.test(licensePlate)) {
+        registerErrorMessage.textContent = 'La placa debe tener 6 caracteres alfanuméricos (e.g., ABC123).';
+        return;
+      }
+
+      if (blocks[selectedBlock].available > 0) {
+        blocks[selectedBlock].available--;
+        updateParkingStatus();
+        
+        const tableBody = document.getElementById('entry-table').querySelector('tbody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${licensePlate}</td>
+          <td>${vehicleType}</td>
+          <td>Bloque ${selectedBlock}</td>
+          <td>${entryTime}</td>
+        `;
+        tableBody.appendChild(row);
+        registerMessage.textContent = 'Entrada registrada exitosamente.';
+      } else {
+        registerErrorMessage.textContent = 'No hay espacios disponibles en el bloque seleccionado.';
+      }
+    }
+
+    function reserveSpace() {
+      const licensePlate = document.getElementById('reservation-license-plate').value.trim().toUpperCase();
+      const selectedBlock = document.getElementById('reservation-block').value;
+      const reservationTime = new Date().toLocaleTimeString();
+
+      const reservationMessage = document.getElementById('reservation-message');
+      const reservationErrorMessage = document.getElementById('reservation-error-message');
+      reservationMessage.textContent = '';
+      reservationErrorMessage.textContent = '';
+
+      if (!licensePlate || !selectedBlock) {
+        reservationErrorMessage.textContent = 'Todos los campos son obligatorios.';
+        return;
+      }
+
+      if (!/^[A-Z0-9]{6}$/.test(licensePlate)) {
+        reservationErrorMessage.textContent = 'La placa debe tener 6 caracteres alfanuméricos (e.g., ABC123).';
+        return;
+      }
+
+      if (blocks[selectedBlock].available > 0) {
+        blocks[selectedBlock].available--;
+        updateParkingStatus();
+
+        const tableBody = document.getElementById('reservation-table').querySelector('tbody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${licensePlate}</td>
+          <td>Bloque ${selectedBlock}</td>
+          <td>${reservationTime}</td>
+        `;
+        tableBody.appendChild(row);
+        reservationMessage.textContent = 'Reserva realizada exitosamente.';
+      } else {
+        reservationErrorMessage.textContent = 'No hay espacios disponibles en el bloque seleccionado.';
+      }
+    }
+
+    updateParkingStatus();
+  </script>
+</body>
+</html>
